@@ -1,5 +1,6 @@
 <template>
    <v-app>
+    <!-- Cuerpo de la página-->
     <sistema-menu/>
    </v-app>
 </template>
@@ -7,7 +8,7 @@
 import SistemaMenu from '../components/SistemaMenu.vue'
 export default {
     components:{
-        SistemaMenu
+        SistemaMenu,
     },
     data() {
         return {
