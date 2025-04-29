@@ -28,6 +28,33 @@ const routes = [
           //meta: { requireAuth: true }
       },
 
+      {
+        path: '/solicitudes-pendientes',
+        name: 'Solicitud',
+
+        component: () =>
+            import ('../views/Solicitud.vue'),
+        //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/crear-solicitud-de-entrada',
+      name: 'Entrada',
+
+      component: () =>
+          import ('../views/Entrada.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/editar-solicitud-entrada',
+      name: 'EditarEntrada',
+
+      component: () =>
+          import ('../views/EditarEntrada.vue'),
+      //meta: { requireAuth: true }
+    },
+
   ]
    
   }

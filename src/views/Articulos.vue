@@ -11,8 +11,7 @@
             crear
             </v-btn>
             <v-toolbar flat>
-                
-                <v-toolbar-title>{{ tituloTabla }}</v-toolbar-title>
+                <v-toolbar-title id="titulo">{{ tituloTabla }}</v-toolbar-title>
                 <v-divider
                     class="mx-4"
                     inset
@@ -49,6 +48,8 @@
                      :loading="cargando"
                      loading-text="Cargando datos por favor espere..."
                      :items="desserts"
+                     :search="search"
+                     no-results-text="No hay datos disponibles"
                      
                 >
                     <template v-slot:[`item.actions`]="{ item }">
@@ -75,7 +76,6 @@
                         color="#000080"
                        
                     >
-                    Por favor espere...
                     </v-progress-circular>
 
                 </v-overlay>
@@ -290,11 +290,11 @@ export default {
                 {text:'Referencia', value:'referencia', class: "white--text grey darken-3"},
                 {text:'Categoría', value:'categoria', class: "white--text grey darken-3"},
                 {text:'Marca', value:'marca', class: "white--text grey darken-3"},
-                {text:'Impresora', value:'modelo', class: "white--text grey darken-3"},
-                {text:'Color', value:'color', class: "white--text grey darken-3"},
-                {text:'Stock', value:'stock', class: "white--text grey darken-3"},
-                {text:'Status', value:'estado', class: "white--text grey darken-3"},
-                { text: 'Acción', value: 'actions', sortable: false, class: "white--text grey darken-3" },
+                {text:'Impresora', value:'modelo', class: "white--text grey darken-3",sortable:false},
+                {text:'Color', value:'color', class: "white--text grey darken-3", sortable:false},
+                {text:'Stock', value:'stock', class: "white--text grey darken-3", sortable:false},
+                {text:'Status', value:'estado', class: "white--text grey darken-3", sortable:false},
+                {text: 'Acción', value: 'actions', sortable: false, class: "white--text grey darken-3" },
             ]
         }
     },
@@ -306,7 +306,7 @@ export default {
         },
 
         tituloTabla(){
-            return this.titulo === -1 ? 'Tabla de registros' : ''
+            return this.titulo === -1 ? 'Artículos' : ''
         },
 
         tituloCrear(){
@@ -493,5 +493,9 @@ export default {
     color: white;
     background-color: red;
     font-weight: bold;
+}
+
+#titulo{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 </style>
