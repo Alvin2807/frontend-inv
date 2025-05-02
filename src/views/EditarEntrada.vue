@@ -12,11 +12,25 @@
                 <v-spacer></v-spacer>
                 <v-btn-toggle v-model="botones">
                     <v-btn
+                        color="#273746"
+                        class="white--text"
+                        @click="confirmar()"
+                    >   <v-icon class="white--text">check</v-icon>
+                       confirmar
+                    </v-btn>
+                    <v-btn
                         color="green"
                         class="white--text"
                         @click="guardar()"
                     >   <v-icon class="white--text">save</v-icon>
                        guadar
+                    </v-btn>
+                    <v-btn
+                        color="red"
+                        class="white--text"
+                        @click="eliminarSolicitud()"
+                    >   <v-icon class="white--text">delete</v-icon>
+                      eliminar
                     </v-btn>
                 </v-btn-toggle>
             </v-toolbar>
@@ -292,7 +306,7 @@
 </template>
 <script src="sweetalert2.all.min.js"></script>
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import API from '@/api';
 export default {
@@ -346,6 +360,7 @@ export default {
                 [
                    {
                     no_item:1,
+                    id_detalle:'',
                     codigo:'',
                     fk_articulo:'',
                     referencia:'',
@@ -401,6 +416,7 @@ export default {
     },
 
     methods: {
+        ...mapActions(['mostrarSolicitudPendientes']),
         informacion(){
             const usuario = localStorage.getItem('usuario');
             if (!usuario) {
@@ -446,6 +462,7 @@ export default {
         },
 
         eliminar(index,articulo){
+          if (this.$refs.validarDetalle.validate() && this.$refs.validacion.validate()) {
             if (articulo.id_detalle) {
                 Swal.fire({
                     title:'¿Estas seguro de eliminar este artículo?',
@@ -457,8 +474,29 @@ export default {
                     cancelButtonText:'No'
                 }).then((result) => {
                 if (result.isConfirmed) {
-                  
-                }
+                    this.overlay = true
+                    setTimeout(()=>{
+                        this.overlay = false
+                        const eliminarArticulo = async()=>{
+                        let perfil = JSON.parse(localStorage.getItem('usuario'))
+                        this.editedItem.usuario = perfil.usuario
+                        const respuesta = await API.put('eliminar_articulo_solicitud', {
+                            id_detalle:   articulo.id_detalle,
+                            fk_articulo:  articulo.fk_articulo,
+                            fk_solicitud: articulo.fk_solicitud,
+                            cantidad_solicitada: articulo.cantidad_solicitada,
+                            usuario:this.editedItem.usuario
+                        })
+                        if (respuesta.data.ok == true) {
+                            this.mensajeEliminarArticulo(respuesta.data.eliminadoArticulo)
+                            this.informacion()
+                        } else if (respuesta.data.ok == false) {
+                            this.mensajeEliminarArticuloErrorRegistro(respuesta.data.errorEliminarArticulo)
+                        }
+                    }
+                        return eliminarArticulo();
+                    },2000)
+                    }
                 });
             } else {
                 if (this.editedItem.articulos.length > 1) {
@@ -466,6 +504,14 @@ export default {
                     this.updateItem()
                 }
             }
+          } else {
+            Swal.fire({
+            icon:'warning',
+            title:'Faltan campos obligatorios',
+            showConfirmButton:false,
+            timer:2000
+            }) 
+          }
         },
 
         updateItem () {
@@ -486,6 +532,7 @@ export default {
                })
             } else {
                 this.editedItem.articulos.push({
+                    id_detalle: item.id_detalle,
                     no_item: this.cantArrayArticulo + 1,
                     fk_articulo:item.id_articulo,
                     codigo:item.codigo,
@@ -519,6 +566,13 @@ export default {
                 return guardarDatos();
             }, 2000);
             
+        } else {
+        Swal.fire({
+            icon:'warning',
+            title:'Faltan campos obligatorios',
+            showConfirmButton:false,
+            timer:2000
+        }) 
         }
            
         },
@@ -533,6 +587,16 @@ export default {
             })
         },
 
+        mensajeEliminarArticulo(eliminadoArticulo){
+            Swal.fire({
+                icon:'success',
+                title:'!Genial',
+                text: eliminadoArticulo,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
         mensajeErrorRegistro(errorRegistro){
             Swal.fire({
                 icon: 'error',
@@ -541,14 +605,127 @@ export default {
                 timer:2000
             })
         },
-            
-            
+
+        mensajeEliminarArticuloErrorRegistro(errorEliminarArticulo){
+            Swal.fire({
+                icon: 'error',
+                title:errorEliminarArticulo,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        mensajeEliminadoExitoso(eliminarSolicitud){
+            Swal.fire({
+                icon:'success',
+                title:'!Genial',
+                text: eliminarSolicitud,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        mensajeConfirmarExitoso(confirmado){
+            Swal.fire({
+                icon:'success',
+                title:'!Genial',
+                text: confirmado,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        mensajeEliminadoError(errorEliminarSolicitud){
+            Swal.fire({
+                icon:'error',
+                title:errorEliminarSolicitud,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        mensajeConfirmadoError(error){
+            Swal.fire({
+                icon:'error',
+                title:error,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        eliminarSolicitud(){
+            Swal.fire({
+                title: "¿Estas seguro de eiliminar esta solicitud?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Sí",
+                cancelButtonText:'No'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (this.$refs.validarDetalle.validate() && this.$refs.validacion.validate()) {
+                        let perfil = JSON.parse(localStorage.getItem('usuario'))
+                        this.editedItem.usuario = perfil.usuario
+                        this.overlay = true
+                        setTimeout(() => {
+                            this.overlay = false
+                            const eliminarSolicitud = async()=>{
+                                const respuesta = await API.put('eliminar_solicitud', this.editedItem)
+                                if (respuesta.data.ok == true) {
+                                    this.mostrarSolicitudPendientes()
+                                    this.mensajeEliminadoExitoso(respuesta.data.eliminarSolicitud)
+                                    this.$router.push({path:'/inicio'})
+                                } else if (respuesta.data.ok == false) {
+                                    this.mensajeEliminadoError(respuesta.data.errorEliminarSolicitud)
+                                }
+                            }
+                            return eliminarSolicitud();
+                        }, 2000);
+                    } else {
+                    Swal.fire({
+                        icon:'warning',
+                        title:'Faltan campos obligatorios',
+                        showConfirmButton:false,
+                        timer:2000
+                    }) 
+                    }
+            }
+            });
+        
+        },
+
+        confirmar(){
+            if (this.$refs.validarDetalle.validate() && this.$refs.validacion.validate()) {
+                let perfil = JSON.parse(localStorage.getItem('usuario'))
+                this.editedItem.usuario = perfil.usuario
+                this.overlay = true
+                setTimeout(() => {
+                    this.overlay = false
+                    const confirmarDatos = async()=>{
+                        const respuesta = await API.put('confirmar_solicitud', this.editedItem)
+                        if (respuesta.data.ok == true) {
+                            this.mostrarSolicitudPendientes()
+                            this.mensajeConfirmarExitoso(respuesta.data.confirmado)
+                            this.$router.push({path:'/inicio'})
+                        } else if (respuesta.data.ok == false) {
+                            this.mensajeConfirmadoError(respuesta.data.error)
+                        }
+                    }
+                    return confirmarDatos();
+                }, 2000);
+                
+            } else {
+                Swal.fire({
+                    icon:'warning',
+                    title:'Faltan campos obligatorios',
+                    showConfirmButton:false,
+                    timer:2000
+                }) 
+            }
         }
-
-       
-
-     
-
+             
+        }
     }
 
 </script>
