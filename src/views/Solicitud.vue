@@ -103,7 +103,7 @@ export default {
     computed: {
         ...mapState(['loginDatos']),
         tituloTabla(){
-            return this.titulo === -1 ? 'Solicitudes Pendientes' : ''
+            return this.titulo === -1 ? 'SOLICITUDES PENDIENTES' : ''
         },
 
     },

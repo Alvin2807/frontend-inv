@@ -128,10 +128,22 @@ export default {
                 action: 'description',
                 items: 
                     [
-                        { title: 'Crear Entrada', path:'/crear-solicitud-de-entrada'}
+                        { title: 'Crear Entrada', path:'/crear-solicitud-de-entrada'},
+                        { title: 'Crear Salida', path:'/crear-solicitud-de-salida'}
                     ],
                 title: 'Solicitudes',
                 },
+
+                {
+                action: 'description',
+                items: 
+                    [
+                        { title: 'Entradas X Artículos', path:'/articulos_entradas'},
+                    ],
+                title: 'Entradas',
+                },
+
+                
 
             ],
         }

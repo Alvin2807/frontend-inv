@@ -7,7 +7,7 @@
             >
                 <v-toolbar flat id="titulo">
                     <v-toolbar-title>
-                        {{ tituloFormulario }}
+                        {{ tituloFormulario }} ({{ tipo_entrada }}) 
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn-toggle v-model="botones">
@@ -47,7 +47,7 @@
                         <v-row>
                             <v-col
                                 cols="12"
-                                sm="3"
+                                sm="2"
                             >
                             <v-menu
                                 v-model="menuFecha"
@@ -78,34 +78,18 @@
                                 locale="es"
                                 class="caption"  
                                 :max="nowDate"
-
+                           
                             ></v-date-picker>
                             </v-menu>
                             </v-col>
+
                             <v-col
                                 cols="12"
-                                sm="4"
+                                sm="5"
                             >
                             <v-text-field
-                                label="Número de Trans"
+                                label="Número de solicitud*"
                                 v-model="editedItem.num_solicitud"
-                                type="number"
-                                autocomplete="off"
-                                dense
-                                color="#15395A"
-                                class="text-md-body-1 my-text"
-                                 :counter="10"
-                                :rules="reglaNum"
-                            >
-                            </v-text-field>
-                            </v-col>
-                            <v-col
-                                cols="12"
-                                sm="4"
-                            >
-                            <v-text-field
-                                label="Preparado por"
-                                v-model="editedItem.preparado_por"
                                 type="text"
                                 autocomplete="off"
                                 dense
@@ -115,14 +99,24 @@
                             >
                             </v-text-field>
                             </v-col>
-                         
-                           
+
                             <v-col
-                            cols="11"
-                            sm="5"
+                                cols="12"
+                                sm="4"
                             >
-                         
+                            <v-text-field
+                                label="Entregado por*"
+                                v-model="editedItem.entregado_por"
+                                type="text"
+                                autocomplete="off"
+                                dense
+                                color="#15395A"
+                                class="text-md-body-1 my-text"
+                                :rules="$rules.required"
+                            >
+                            </v-text-field>
                             </v-col>
+
                             <v-col
                                 cols="12"
                                 sm="12"
@@ -140,6 +134,7 @@
                                 class="text-md-body-1 my-text"
                                 :rules="$rules.required"
                                 no-data-text="No hay datos disponibles"
+                                @change="getSolicitudEntrada()"
                               
                             >
                             </v-autocomplete>
@@ -225,7 +220,7 @@
                                         sm="2"
                                     >
                                     <v-text-field
-                                        label="Cantidad"
+                                        label="Cantidad*"
                                         v-model="articulo.cantidad_solicitada"
                                         type="number"
                                         autocomplete="off"
@@ -333,6 +328,7 @@ export default {
             titulo:-1,
             botones:null,
             menuFecha:false,
+            tipo_entrada:'',
             nowDate: new Date().toISOString().slice(0,10),
             editeIndex:-1,
             cargando:false,
@@ -349,12 +345,13 @@ export default {
                 { text: 'Código', value: 'codigo',class: "white--text grey darken-3"},
                 { text: 'Referencia', value: 'referencia', class: "white--text grey darken-3"},
                 { text: 'Marca', value: 'marca', class: "white--text grey darken-3", sortable:false},
-                //{ text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
+                { text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
                 { text: 'Color', value: 'color', class: "white--text grey darken-3", sortable:false},
                 { text: 'Acción', value: 'actions',class: "white--text grey darken-3"},
                 
             ],
             desserts: [],
+            tipo_entradas:[],
             numberRule: 
             [
                 value => !!value || 'Campo obligatorio.',
@@ -370,10 +367,12 @@ export default {
                 fecha_entrada:null,
                 fk_despacho:'',
                 fk_tipo_solicitud:1,
+                fk_tipo_entrada:'',
                 tipo_accion:'ENTRADA',
-                num_solicitud:'',
                 usuario:'',
-                preparado_por:'',
+                entregado_por:'',
+                num_solicitud:'',
+                mes:'',
                 articulos:
                 [
                    {
@@ -386,7 +385,6 @@ export default {
                     modelo:'',
                     color:'',
                     cantidad_solicitada:'',
-                   
                    }
                 ],
             },
@@ -400,7 +398,7 @@ export default {
     computed: {
         ...mapState(['loginDatos']),
         tituloFormulario(){
-            return this.titulo === -1 ? 'Solicitud de Entrada' : '';
+            return this.titulo === -1 ? 'SOLICITUD DE ENTRADA' : '';
         },
 
         fecha_entrada: {
@@ -441,6 +439,7 @@ export default {
             return
         },
 
+
         limpiarDataArticulosDetalle(){
             this.editedItem.articulos = []
         },
@@ -460,6 +459,25 @@ export default {
             this.mostrarDespachos()
             this.limpiarDataArticulosDetalle()
             this.mostrarArticulos()
+            this.mostrarTipoEntradas()
+           
+            
+        },
+
+        async mostrarTipoEntradas(){
+            const respuesta = await API.get('tipo_entradas')
+            this.tipo_entradas = respuesta.data.data
+            return
+        },
+
+        getSolicitudEntrada(){
+            if (this.editedItem.fk_despacho !== null) {
+                let objEntrada = this.tipo_entradas.find(data =>data.fk_despacho === this.editedItem.fk_despacho)
+                this.tipo_entrada = objEntrada.tipo_entrada;
+                this.editedItem.fk_tipo_entrada = objEntrada.id_tipo_entrada;
+            } else {
+                this.tipo_entrada = null
+            }
         },
 
         updateItem () {
@@ -517,7 +535,6 @@ export default {
                 timer: 1500
                 }) 
             } else {
-
                 const registrarData = async()=>{
                     let perfil = JSON.parse(localStorage.getItem('usuario'))
                     this.editedItem.usuario = perfil.usuario
@@ -590,8 +607,7 @@ export default {
 
             borrar(){
                this.limmpiarTodosCampos()
-            }
-            
+            },
         },
 }
 </script>

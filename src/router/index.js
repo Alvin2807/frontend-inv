@@ -47,11 +47,38 @@ const routes = [
     },
 
     {
+      path: '/crear-solicitud-de-salida',
+      name: 'Salida',
+
+      component: () =>
+          import ('../views/Salida.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
       path: '/editar-solicitud-entrada',
       name: 'EditarEntrada',
 
       component: () =>
           import ('../views/EditarEntrada.vue'),
+      //meta: { requireAuth: true }
+    },
+
+     {
+      path: '/articulos_entradas',
+      name: 'ArticulosEntradas',
+
+      component: () =>
+          import ('../views/ArticulosEntradas.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/detalle_de_articulo_x_entrada',
+      name: 'DetalleArticulo',
+
+      component: () =>
+          import ('../views/DetalleArticulo.vue'),
       //meta: { requireAuth: true }
     },
 

@@ -7,7 +7,7 @@
         >
             <v-toolbar flat id="titulo">
                 <v-toolbar-title>
-                    {{ tituloFormulario }}
+                    {{ tituloFormulario }} ({{ editedItem.tipo_entrada }}) 
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn-toggle v-model="botones">
@@ -80,34 +80,36 @@
                                 locale="es"
                                 class="caption"  
                                 :max="nowDate"
+                                @change="ver()"
 
                             ></v-date-picker>
                             </v-menu>
                             </v-col>
+
                             <v-col
                                 cols="12"
-                                sm="4"
+                                sm="5"
                             >
                             <v-text-field
-                                label="Número de Trans"
+                                label="Número de solicitud"
                                 v-model="editedItem.num_solicitud"
-                                type="number"
+                                type="text"
                                 autocomplete="off"
                                 dense
                                 color="#15395A"
                                 class="text-md-body-1 my-text"
-                                :counter="10"
-                                :rules="reglaNum"
+                                :rules="$rules.required"
                             >
                             </v-text-field>
                             </v-col>
+
                             <v-col
                                 cols="12"
                                 sm="4"
                             >
                             <v-text-field
-                                label="Preparado por"
-                                v-model="editedItem.preparado_por"
+                                label="Entregado por"
+                                v-model="editedItem.entregado_por"
                                 type="text"
                                 autocomplete="off"
                                 dense
@@ -135,6 +137,7 @@
                                 class="text-md-body-1 my-text"
                                 :rules="$rules.required"
                                 no-data-text="No hay datos disponibles"
+                                @change="getSolicitudEntrada()"
                             >
                             </v-autocomplete>
                             </v-col>
@@ -317,6 +320,7 @@ export default {
             botones:null,
             loader:null,
             menuFecha:false,
+            tipo_entrada:'',
             cargando:false,
             overlay:false,
             opacity:0,
@@ -341,21 +345,23 @@ export default {
                 { text: 'Código', value: 'codigo',class: "white--text grey darken-3"},
                 { text: 'Referencia', value: 'referencia', class: "white--text grey darken-3"},
                 { text: 'Marca', value: 'marca', class: "white--text grey darken-3", sortable:false},
-                //{ text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
+                { text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
                 { text: 'Color', value: 'color', class: "white--text grey darken-3", sortable:false},
                 { text: 'Acción', value: 'actions',class: "white--text grey darken-3"},
                 
             ],
             desserts: [],
+            tipo_entradas:[],
             editedItem:{
                 fecha_entrada:null,
                 fk_despacho:'',
                 fk_tipo_solicitud:1,
+                fk_tipo_entrada:'',
                 id_solicitud:'',
                 tipo_accion:'ENTRADA',
-                num_solicitud:'',
                 usuario:'',
-                preparado_por:'',
+                entregado_por:'',
+                num_solicitud:'',
                 articulos:
                 [
                    {
@@ -379,7 +385,7 @@ export default {
     computed: {
         ...mapState(['loginDatos','datos']),
         tituloFormulario(){
-            return this.titulo === -1 ? 'Editar Solicitud de Entrada' : '';
+            return this.titulo === -1 ? 'EDITAR SOLICITUD DE ENTRADA' : '';
         },
 
         fecha_entrada: {
@@ -438,6 +444,8 @@ export default {
             this.editedItem = respuesta.data.data
             this.mostrarDespachos()
             this.mostrarArticulos()
+            this.mostrarTipoEntradas()
+            this.ver()
             return
         },
 
@@ -453,12 +461,29 @@ export default {
             return
         },
 
+        async mostrarTipoEntradas(){
+            const respuesta = await API.get('tipo_entradas')
+            this.tipo_entradas = respuesta.data.data
+            return
+        },
+
         async mostrarArticulos(){
              this.cargando = true
              const respuesta = await API.get('articulos_disponibles_entradas')
              this.desserts = respuesta.data.data
              this.cargando = false
              return
+        },
+
+         getSolicitudEntrada(){
+            if (this.editedItem.fk_despacho !== null) {
+                let objEntrada = this.tipo_entradas.find(data =>data.fk_despacho === this.editedItem.fk_despacho)
+                this.tipo_entrada = objEntrada.tipo_entrada;
+                this.editedItem.tipo_entrada = objEntrada.tipo_entrada
+                this.editedItem.fk_tipo_entrada = objEntrada.id_tipo_entrada;
+            } else {
+                this.tipo_entrada = null
+            }
         },
 
         eliminar(index,articulo){
@@ -723,7 +748,13 @@ export default {
                     timer:2000
                 }) 
             }
-        }
+        },
+
+          ver(){
+                const fecha = new Date(this.editedItem.fecha_entrada); 
+                const mes = fecha.toLocaleDateString('es-ES', { month: 'long' });
+                this.editedItem.mes = mes 
+            }
              
         }
     }
@@ -789,4 +820,9 @@ export default {
       transform: rotate(360deg);
     }
   }
+
+   .my-text input{
+    text-transform: uppercase;
+}
+
 </style>
