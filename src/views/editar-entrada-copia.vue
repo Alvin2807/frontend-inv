@@ -9,7 +9,6 @@
                 <v-toolbar-title>
                     {{ tituloFormulario }} ({{ editedItem.tipo_entrada }}) 
                 </v-toolbar-title>
-
                 <v-spacer></v-spacer>
                 <v-btn-toggle v-model="botones">
                     <v-btn
@@ -257,26 +256,11 @@
                                 </v-text-field>
                             </v-col>
                             </v-toolbar>
-                           <!--  <v-data-table
-                                class="elevation-1 user-table"
-                                :headers="table.headers"
-                                :items="usersList"
-                                :items-per-page="table.options.itemsPerPage"
-                                :no-data-text="table.options.noDataText"
-                                :footer-props="table.options.footerProps"
-                                >
-                                <template slot="items" slot-scope="props">
-                                    <td class="text-xs-right pa-4">{{ props.item.codigo}}</td>
-                                   
-                                </template> 
-                            
-                            </v-data-table> -->
                             <v-data-table
                             :headers="headers"
                             :items="desserts"
                             :items-per-page="5"
                             :search="search"
-                      
                             class="elevation-0 mt-3"
                             :loading="cargando"               
                             no-results-text="No hay datos disponibles"
@@ -290,7 +274,6 @@
                                     dark
                                     rounded
                                     color="light-blue darken-1"
-                                  
                                     @click="elegir(item)"
                                 >elegir
                                 </v-btn>
@@ -379,7 +362,7 @@ export default {
                 usuario:'',
                 entregado_por:'',
                 num_solicitud:'',
-                articulos:
+               /*  articulos:
                 [
                    {
                     no_item:1,
@@ -394,7 +377,7 @@ export default {
                     cantidad_solicitada:'',
                    
                    }
-                ],
+                ], */
             },
         }
     },
@@ -486,7 +469,7 @@ export default {
 
         async mostrarArticulos(){
              this.cargando = true
-             const respuesta = await API.get('articulos')
+             const respuesta = await API.get('articulos_disponibles_entradas')
              this.desserts = respuesta.data.data
              this.cargando = false
              return
@@ -603,8 +586,6 @@ export default {
                         this.mensajeGuardarExitoso(respuesta.data.exitoso)
                     } else if (respuesta.data.ok == false) {
                         this.mensajeErrorRegistro(respuesta.data.errorRegistro)
-                    } else if (respuesta.data.existeNumSolicitud) {
-                        this.mensajeGuardarExiste(respuesta.data.existeNumSolicitud)
                     }
                 } 
                 return guardarDatos();
@@ -630,15 +611,6 @@ export default {
                 timer:2000
             })
         },
-
-         mensajeGuardarExiste(existeNumSolicitud){
-                Swal.fire({
-                icon:'warning',
-                title:existeNumSolicitud,
-                showConfirmButton:false,
-                timer:3000
-            })
-         },
 
         mensajeEliminarArticulo(eliminadoArticulo){
             Swal.fire({
@@ -782,8 +754,8 @@ export default {
                 const fecha = new Date(this.editedItem.fecha_entrada); 
                 const mes = fecha.toLocaleDateString('es-ES', { month: 'long' });
                 this.editedItem.mes = mes 
-            },
-
+            }
+             
         }
     }
 

@@ -31,13 +31,23 @@
 
                 </v-toolbar>
                 <v-divider></v-divider>
+                <v-container>
+                    <v-alert
+                        v-model="verificarMensaje"
+                        outlined
+                        type="warning"
+                        prominent
+                        border="left"
+                    >
+                        {{ existeNumsolicitud.toUpperCase()}}
+                    </v-alert>
+                </v-container>
                 <v-stepper-step
                     :complete="formulario > 1"
                     step="1"
                     color="#15395A"
                 >
                 <h3 id="datosFormulario">Datos Generales</h3>
-              
                 </v-stepper-step>
 
                 <v-stepper-content step="1">
@@ -96,6 +106,8 @@
                                 color="#15395A"
                                 class="text-md-body-1 my-text"
                                 :rules="$rules.required"
+                                clearable
+                             
                             >
                             </v-text-field>
                             </v-col>
@@ -146,7 +158,7 @@
                 <v-btn
                     color="#15395A"
                     dark
-                    @click="formulario = 2"
+                    @click="btnSiguiente()"
                 >
                     siguiente
                     <v-icon>skip_next</v-icon>
@@ -261,6 +273,10 @@
                                 </v-text-field>
                             </v-col>
                         </v-toolbar>
+                        
+
+                        
+
                      
                         <v-data-table
                             :headers="headers"
@@ -328,6 +344,7 @@ export default {
             titulo:-1,
             botones:null,
             menuFecha:false,
+            verificarMensaje:false,
             tipo_entrada:'',
             nowDate: new Date().toISOString().slice(0,10),
             editeIndex:-1,
@@ -338,6 +355,7 @@ export default {
             modal2: false,
             overlay:false,
             opacity:0,
+            existe:'',
             despachos:[],
             headers: 
             [
@@ -413,6 +431,10 @@ export default {
         cantArrayArticulo () {
             return this.editedItem.articulos.length
         },
+
+        existeNumsolicitud(){
+            return this.existe
+        }
     },
 
     methods: {
@@ -524,6 +546,8 @@ export default {
             }
         },
 
+    
+
         registrar(){
             let perfil = JSON.parse(localStorage.getItem('usuario'))  
             this.editedItem.usuario = perfil.usuario
@@ -552,6 +576,9 @@ export default {
                             },2000)
                         } else if (respuesta.data.ok == false) {
                             this.mensajeErrorRegistro(respuesta.data.errorRegistro)
+                        } else if (respuesta.data.existe) {
+                           this.mensajeRegistroExisteNumSolicitud(respuesta.data.existe)
+                            
                         }
                     } else {
                         Swal.fire({
@@ -587,6 +614,15 @@ export default {
                 })
             },
 
+            mensajeRegistroExisteNumSolicitud(existe){
+                Swal.fire({
+                    icon:'warning',
+                    title: existe,
+                    showConfirmButton:false,
+                    timer:3000
+                })
+            },
+
             mensajeErrorRegistro(errorRegistro){
                 Swal.fire({
                     icon: 'error',
@@ -608,6 +644,13 @@ export default {
             borrar(){
                this.limmpiarTodosCampos()
             },
+
+            btnSiguiente(){
+                if (this.$refs.validacion.validate()) {
+                    this.formulario = 2
+                } 
+            }
+            
         },
 }
 </script>

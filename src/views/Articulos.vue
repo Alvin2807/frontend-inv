@@ -57,7 +57,7 @@
                             rounded
                             small
                             dark
-                            v-if="!item.stock > 0"
+                            v-if="item.tiene_historial != 'SI'"
                             color="green"
                             @click="elegir(item)"
                         >

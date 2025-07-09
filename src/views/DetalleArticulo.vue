@@ -1,5 +1,5 @@
 <template>
-    <v-app>
+    <v-app id="fondo">
       <v-container>
         <template>
           <v-stepper
@@ -11,7 +11,14 @@
                 {{ tituloFormulario }} - {{ editedItem.categoria }} DE LA IMPRESORA {{ editedItem.modelo }} {{ editedItem.color }}
               </v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-btn></v-btn>
+              <v-btn
+                color="teal"
+                class="white--text elevation-0"
+                large
+                @click="imprimir()"
+              >imprimir
+              <v-icon>print</v-icon>
+              </v-btn>
             </v-toolbar>
             <v-divider></v-divider>
             <v-stepper-step
@@ -172,6 +179,7 @@
                       class="text-md-body-1 my-text mt-3"
                       no-data-text="No hay datos disponibles"
                       clearable
+                      @change="verMes()"
                     >
                     </v-autocomplete>
                 </v-col>
@@ -213,6 +221,10 @@
 <script>
 import { mapState } from 'vuex';
 import API from '@/api'
+import { jsPDF } from "jspdf";
+import mpImg from '@/assets/LogoMP.js'
+import logoSPA from '@/assets/logoSPA.js'
+import autoTable from 'jspdf-autotable'
 export default {
     data() {
         return {
@@ -223,6 +235,8 @@ export default {
             cargandoDatos:false,
             buscar:'',
             menuFecha:false,
+            totalItem:'',
+            selectedOption: '',
             headers: 
             [
                 {text:'Fecha de Entrada', value: 'fecha_entrada',class: "white--text grey darken-3"},
@@ -314,7 +328,169 @@ export default {
           const respuesta = await API.get('meses_entrada/' + localStorage.getItem('id_articulo'))
           this.mesesEntradas = respuesta.data.data
           return
+        },
+
+        imprimir(){
+          this.totalItem = this.total;
+            const fecha = new Date();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            const año = fecha.getFullYear();
+            const fechaEnNumero = `${dia}/${mes}/${año}`;
+
+          
+            const doc = new jsPDF("a4");
+            const pageCount = doc.internal.getNumberOfPages()
+            const addFooters = doc =>{
+                for (var i = 1; i <= pageCount; i++) {
+                    doc.setPage(i)
+                    doc.text('Página ' + String(i) + ' de ' + String(pageCount), doc.internal.pageSize.width / 2, 287, {
+                        align: 'center'
+                    })
+                }
+
+              doc.setFont('helvetica', 'italic')
+              var xc = 3; var yc = 3;
+              doc.setFontSize(10);
+              doc.text( xc , yc, 'Impresión: ' + fechaEnNumero, 'left').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var x = 100; var y = 10;
+              doc.setFontSize(12);
+              doc.text( x , y, "República de Panamá", 'center').setFont(undefined, 'normal');
+              doc.addImage(mpImg , "PNG", 70, 15, 25, 25);
+              doc.addImage(logoSPA , "PNG", 97, 15, 30, 25);
+
+              doc.setFont('helvetica', 'italic')
+              var xa = 100; var ya = 47;
+              doc.setFontSize(12);
+              doc.text( xa , ya, "Ministerio Público", 'center').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xb = 100; var yb = 54;
+              doc.setFontSize(12);
+              doc.text( xb , yb, "Unidad de Informática de Colón", 'center').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xf = 100; var yf = 62;
+              doc.setFontSize(10);
+              doc.text( xf , yf, "DETALLE DE ENTRADA - " + this.editedItem.categoria + ' ' + this.editedItem.codigo, 'center').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xg = 10; var yg = 80;
+              doc.setFontSize(10);
+              doc.text( xg , yg, 'Código:', 'left').setFont(undefined, 'bold');
+
+              doc.setFont('helvetica', 'italic')
+              var xj = 25; var yj = 80;
+              doc.setFontSize(10);
+              doc.text( xj , yj, this.editedItem.codigo, 'left').setFont(undefined, 'bold');
+
+              doc.setFont('helvetica', 'italic')
+              var xk = 10; var yk = 90;
+              doc.setFontSize(10);
+              doc.text( xk , yk, 'Marca:', 'left').setFont(undefined, 'normal');
+
+              var lxa = 10; // largo x
+              var lyiza = 72; // largo y izquierdo
+              var lydra = 72; // largo y derecho
+              var anchoa = 205;
+              doc.line(lxa, lyiza, anchoa, lydra).setFont(undefined, 'bold');
+              doc.setLineWidth(0.1);
+
+              var lxas = 10; // largo x
+              var lyizas = 115; // largo y izquierdo
+              var lydras = 115; // largo y derecho
+              var anchoas = 205;
+              doc.line(lxas, lyizas, anchoas, lydras).setFont(undefined, 'bold');
+              doc.setLineWidth(0.1);
+
+              doc.setFont('helvetica', 'italic')
+              var xn = 25; var yn = 90;
+              doc.setFontSize(10);
+              doc.text( xn , yn, this.editedItem.marca, 'left').setFont(undefined, 'bold');
+
+              doc.setFont('helvetica', 'italic')
+              var xy = 10; var yy = 100;
+              doc.setFontSize(10);
+              doc.text( xy , yy, 'Impresora:', 'left').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xw = 30; var yw = 100;
+              doc.setFontSize(10);
+              doc.text( xw , yw, this.editedItem.modelo, 'left').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xr = 10; var yr = 110;
+              doc.setFontSize(10);
+              doc.text( xr , yr, 'Color:', 'left').setFont(undefined, 'normal');
+
+              doc.setFont('helvetica', 'italic')
+              var xz = 25; var yz = 110;
+              doc.setFontSize(10);
+              doc.text( xz , yz, this.editedItem.color, 'left').setFont(undefined, 'normal');
+
+                  let datosPDF = []
+                  let arrayDatos = []
+                    for (let index = 0; index <this.desserts.length; index++) {
+               
+                      arrayDatos[0] = this.desserts[index].fecha_entrada
+                      arrayDatos[1] = this.desserts[index].tipo_entrada
+                      arrayDatos[2] = this.desserts[index].num_solicitud
+                      arrayDatos[3] = this.desserts[index].entregado_por
+                      arrayDatos[4] = this.desserts[index].despacho
+                      arrayDatos[5] = this.desserts[index].mes
+                      arrayDatos[6] = this.desserts[index].cantidad_solicitada
+                      datosPDF.push(arrayDatos)
+                      arrayDatos = []
+                        
+                    }
+
+                    var ladoy = 118 +1
+                    autoTable(doc,
+                    {
+                        styles: {overflow: 'linebreak', fontSize: 10},
+                        startY: ladoy,
+                        theme: 'grid',
+                        tableWidth: 'auto',
+                        headStyles :{fillColor : [44, 62, 80]},
+                        head: [['Fecha de Entrada','Tipo de Entrada','Num. de Solicitud','Entregado Por','Despacho','Mes','cantidad']],
+                        body: datosPDF
+                    }
+                    )
+
+                    doc.setFont('helvetica', 'italic')
+                    var xze = 125;  
+                    y = doc.lastAutoTable.finalY + 10
+                    doc.setFontSize(15);
+                    doc.text( xze , y, 'Total: ' + this.totalItem + ' Unidades entradas','left').setFont(undefined, 'normal');
+
+            }
+            addFooters(doc)
+            doc.autoPrint();
+            doc.output('dataurlnewwindow', 'DETALLE ' + this.editedItem.categoria + ' ' + this.editedItem.codigo); 
+          
+        },
+
+        verMes(){
+         
+          const words = this.desserts;
+          const result = words.filter((mes) => mes.mes == this.search);
+          this.desserts = result;
+          if (this.desserts == '') {
+           return this.desserts = this.editedItem.detalles
+          }
         }
+
+                
+        
+          
+          
+
+          
+        
+
+      
 
     },
 }
@@ -329,9 +505,12 @@ export default {
   font-size:15px;
 }
 
-
-   .my-text input{
+.my-text input{
     text-transform: uppercase;
 }
+
+#fondo{
+     background: #f2f3f4;
+ }
 
 </style>
