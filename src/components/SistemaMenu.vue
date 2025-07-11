@@ -139,6 +139,7 @@ export default {
                 items: 
                     [
                         { title: 'Entradas X Artículos', path:'/articulos_entradas'},
+                        { title: 'Entradas', path:'/lista_de_entradas'},
                     ],
                 title: 'Entradas',
                 },

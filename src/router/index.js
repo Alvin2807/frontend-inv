@@ -64,12 +64,30 @@ const routes = [
       //meta: { requireAuth: true }
     },
 
-     {
+    {
       path: '/articulos_entradas',
       name: 'ArticulosEntradas',
 
       component: () =>
           import ('../views/ArticulosEntradas.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/lista_de_entradas',
+      name: 'ListaEntrada',
+
+      component: () =>
+          import ('../views/ListaEntrada.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/detalle_de_constancia_de_entrada',
+      name: 'DetalleEntrada',
+
+      component: () =>
+          import ('../views/DetalleEntrada.vue'),
       //meta: { requireAuth: true }
     },
 
