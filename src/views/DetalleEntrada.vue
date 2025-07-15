@@ -10,6 +10,16 @@
                 {{ tituloFormulario }} CON NÚMERO DE SOLICITUD {{ editedItem.num_solicitud }}
               </v-toolbar-title>
               <v-spacer></v-spacer>
+                <v-btn
+                    color="teal"
+                    class="white--text elevation-0"
+                    large
+                    :loading="loading"
+                    :disabled="loading"
+                    @click="imprimir()"
+                >imprimir
+                <v-icon>print</v-icon>
+                </v-btn>
             </v-toolbar>
             <v-stepper-step
                 :complete="formulario > 1"
@@ -184,13 +194,19 @@
 <script>
 import { mapState } from 'vuex';
 import API from '@/api'
+import mpImg from '@/assets/LogoMP.js'
+import logoSPA from '@/assets/logoSPA.js'
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable'
 export default {
     data() {
         return {
             formulario:1,
             titulo:-1,
             search:'',
+            loading: false,
             cargando:false,
+            loader: null,
             editedItem:{
                 articulos:[
                     {
@@ -206,16 +222,21 @@ export default {
                 {text:'Impresora', value: 'modelo',class: "white--text grey darken-3"},
                 {text:'Color', value: 'color',class: "white--text grey darken-3"},
                 {text:'Cantidad', value: 'cantidad_solicitada',class: "white--text grey darken-3"},
-                /*  {text:'Tipo de Entrada', value: 'tipo_entrada',class: "white--text grey darken-3"},
-                {text:'Núm. de solicitud', value: 'num_solicitud',class: "white--text grey darken-3"},
-                {text:'Entregado Por', value: 'entregado_por',class: "white--text grey darken-3"},
-                {text:'Despacho', value: 'despacho',class: "white--text grey darken-3"},
-                {text:'Mes', value: 'mes',class: "white--text grey darken-3"},
-                {text:'Cantidad', value: 'cantidad_solicitada',class: "white--text grey darken-3", filterable:false}, */
             ],
 
             desserts: [],
         }
+    },
+
+    watch: {
+      loader () {
+        const l = this.loader
+        this[l] = !this[l]
+
+        setTimeout(() => (this[l] = false), 3000)
+
+        this.loader = null
+      },
     },
 
     computed: {
@@ -238,9 +259,6 @@ export default {
 
             this.loginDatos.usuario = usuario
             this.mostrarData();
-           /*  this.MostrarMesesEntrada()
-            this.MesesEntrada() */
-           
         },
 
          async mostrarData(){
@@ -256,7 +274,101 @@ export default {
             this.cargando = false
             return
         },
+
+        imprimir(){
+            this.loader = 'loading'
+            const fecha = new Date();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            const año = fecha.getFullYear();
+            const fechaEnNumero = `${dia}/${mes}/${año}`;
+            const doc = new jsPDF("a4");
+            const pageCount = doc.internal.getNumberOfPages()
+            const addFooters = doc =>{
+            for (var i = 1; i <= pageCount; i++) {
+                doc.setPage(i)
+                doc.text('Página ' + String(i) + ' de ' + String(pageCount), doc.internal.pageSize.width / 2, 287, {
+                    align: 'center'
+                })
+            }
+
+            doc.setFont('helvetica', 'italic')
+            var xc = 3; var yc = 3;
+            doc.setFontSize(10);
+            doc.text( xc , yc, 'Impresión: ' + fechaEnNumero, 'left').setFont(undefined, 'normal');
+
+            doc.setFont('helvetica', 'italic')
+            var x = 100; var y = 10;
+            doc.setFontSize(15);
+            doc.text( x , y, "República de Panamá", 'center').setFont(undefined, 'normal');
+            doc.addImage(mpImg , "PNG", 70, 15, 25, 25);
+            doc.addImage(logoSPA , "PNG", 97, 15, 30, 25);
+
+            doc.setFont('helvetica', 'italic')
+            var xa = 100; var ya = 47;
+            doc.setFontSize(15);
+            doc.text( xa , ya, "Ministerio Público", 'center').setFont(undefined, 'normal');
+
+            doc.setFont('helvetica', 'italic')
+            var xb = 100; var yb = 54;
+            doc.setFontSize(15);
+            doc.text( xb , yb, "Unidad de Informática de Colón", 'center').setFont(undefined, 'normal');
+
+            doc.setFont('helvetica', 'italic')
+            var xf = 100; var yf = 75;
+            doc.setFontSize(15);
+            doc.text( xf , yf, "CONSTANCIA DE ENTREGA  ", 'center').setFont(undefined, 'normal');
+           
+            var lMargin  = 10; // Margin inzquierdo
+            var rMargin  = 10; //Margin dereho
+            var pdMargin = 230; // Ancho oj A4
+            var detalleConstancia = 'De acuerdo a la constancia de entrega con número de solicitud ' + this.editedItem.num_solicitud + ' ' +
+            'por parte de la ' + this.editedItem.despacho + ', entregado por ' + this.editedItem.entregado_por + ' el ' + this.editedItem.fecha_entrada + ' se hizo entrega de lo siguientes insumos:';
+            doc.setFontSize(12);
+            var lines = doc.splitTextToSize(detalleConstancia, (pdMargin-lMargin-rMargin));
+            doc.text(lMargin,  y = 90, lines).setFont(undefined, 'normal');
+            doc.setLineWidth(0.1);
+            
+            let datosPDF = []
+            let arrayDatos = []
+            for (let index = 0; index <this.desserts.length; index++) {
+                arrayDatos[0] = this.desserts[index].codigo
+                arrayDatos[1] = this.desserts[index].categoria
+                arrayDatos[2] = this.desserts[index].marca
+                arrayDatos[3] = this.desserts[index].modelo
+                arrayDatos[4] = this.desserts[index].color
+                arrayDatos[5] = this.desserts[index].cantidad_solicitada
+                datosPDF.push(arrayDatos)
+                arrayDatos = []
+                
+            }
+
+            var ladoy = 105 +1
+            autoTable(doc,
+            {
+                styles: {overflow: 'linebreak', fontSize: 10},
+                startY: ladoy,
+                theme: 'plain',
+                tableWidth: 'auto',
+                headStyles :{fillColor : [191, 201, 202]},
+                head: [['Código', 'Categoría', 'marca', 'Impresora', 'color', 'Cantidad']],
+                body: datosPDF
+            }
+            )
+
+            doc.setFont('helvetica', 'italic')
+            var xze = 105;  
+            y = doc.lastAutoTable.finalY + 10
+            doc.setFontSize(15);
+            doc.text( xze , y, 'Se entregarón un total de ' + this.editedItem.cantidad_solicitada + ' insumos','left').setFont(undefined, 'normal');
+           
+            }
+
+            addFooters(doc)
+            doc.autoPrint();
+            doc.output('dataurlnewwindow', this.editedItem.tipo_entrada + ' ' + this.editedItem.num_solicitud); 
     },
+    }
 }
 </script>
 <style>
