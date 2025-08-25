@@ -1,64 +1,38 @@
 <template>
-    <v-app id="fondo">
-        <v-container>
-            <v-stepper
-                v-model="formulario"
-                vertical
-            >
-                <v-toolbar flat id="titulo">
-                    <v-toolbar-title>
-                        {{ tituloFormulario }} ({{ tipo_entrada }}) 
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-btn-toggle v-model="botones">
-                        <v-btn
-                            color="cyan darken-1"
-                            class="white--text"
-                            @click="registrar()"
-                        >
-                            registrar
-                        </v-btn>
-
-                        <v-btn
-                            color="red"
-                            class="white--text"
-                            @click="borrar()"
-                        >
-                           borrar
-                        </v-btn>
-
-                    </v-btn-toggle>
-
-                </v-toolbar>
-                <v-divider></v-divider>
-                <v-container>
-                    <v-alert
-                        v-model="verificarMensaje"
-                        outlined
-                        type="warning"
-                        prominent
-                        border="left"
+   <v-app id="fondo">
+    <v-container>
+        <v-card class="elevation-0">
+            <v-card-title>
+                {{ tituloFormulario }} ({{ tipo_entrada }}) 
+                <v-spacer></v-spacer>
+                <v-btn-toggle v-model="botones">
+                    <v-btn
+                        color="cyan darken-1"
+                        class="white--text"
+                        @click="registrar()"
                     >
-                        {{ existeNumsolicitud.toUpperCase()}}
-                    </v-alert>
-                </v-container>
-                <v-stepper-step
-                    :complete="formulario > 1"
-                    step="1"
-                    color="#15395A"
-                >
-                <h3 id="datosFormulario">Datos Generales</h3>
-                </v-stepper-step>
-
-                <v-stepper-content step="1">
-                <v-card class="elevation-0">
-                    <v-card-text>
-                       <v-form ref="validacion">
-                        <v-row>
-                            <v-col
-                                cols="12"
-                                sm="2"
-                            >
+                        registrar
+                    </v-btn>
+                    <v-btn
+                        color="red"
+                        class="white--text"
+                        :loading="loading1"
+                        @click="borrar()"
+                    >
+                    borrar
+                    </v-btn>
+                </v-btn-toggle>
+             
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text>
+                <v-form ref="validacion">
+                    <span class="font-weight-black">DATOS GENERALES</span>
+                    <v-row class="mt-3">
+                        <v-col
+                            cols="12"
+                            sm="2"
+                        >
                             <v-menu
                                 v-model="menuFecha"
                                 :close-on-content-click="false"
@@ -88,15 +62,14 @@
                                 locale="es"
                                 class="caption"  
                                 :max="nowDate"
-                           
+                            
                             ></v-date-picker>
                             </v-menu>
-                            </v-col>
-
-                            <v-col
-                                cols="12"
-                                sm="5"
-                            >
+                        </v-col>
+                        <v-col
+                            cols="12"
+                            sm="5"
+                        >
                             <v-text-field
                                 label="Número de solicitud*"
                                 v-model="editedItem.num_solicitud"
@@ -107,12 +80,10 @@
                                 class="text-md-body-1 my-text"
                                 :rules="$rules.required"
                                 clearable
-                             
                             >
                             </v-text-field>
-                            </v-col>
-
-                            <v-col
+                        </v-col>
+                          <v-col
                                 cols="12"
                                 sm="4"
                             >
@@ -128,7 +99,6 @@
                             >
                             </v-text-field>
                             </v-col>
-
                             <v-col
                                 cols="12"
                                 sm="12"
@@ -147,174 +117,131 @@
                                 :rules="$rules.required"
                                 no-data-text="No hay datos disponibles"
                                 @change="getSolicitudEntrada()"
-                              
                             >
                             </v-autocomplete>
                             </v-col>
-                        </v-row>
-                       </v-form>
-                    </v-card-text>
-                </v-card>
-                <v-btn
-                    color="#15395A"
-                    dark
-                    @click="btnSiguiente()"
-                >
-                    siguiente
-                    <v-icon>skip_next</v-icon>
-                </v-btn>
-               
-                </v-stepper-content>
+                    </v-row>
+                    <v-divider v-if="!allSelected"></v-divider>
+                </v-form>
 
-                <v-stepper-step
-                :complete="formulario > 2"
-                step="2"
-                color="#15395A"
-                >
-                <h3 id="datosFormulario">Detalles de Artículos({{  cantArrayArticulo }})</h3>
-               
-                </v-stepper-step>
-
-                <v-stepper-content step="2">
-                <v-card>
-                    <v-card-text>
-                    <v-alert
-                        dense
-                        type="warning"
-                        text
-                        v-model="alerta"
-                    >
-                        No se encontro ningún <strong>artículo</strong> en el detalle
-                    </v-alert>
-                        <v-form ref="validarDetalle">
-                            <div
-                                v-for="(articulo, index) in editedItem.articulos" 
-                                :key="index + articulo"
-                            >
-                            <v-divider></v-divider>
-                                <v-toolbar class="mt-3" flat id="toolbar">
-                                    <v-toolbar-title class="text-lg-h6">
-                                        #{{ articulo.item }} 
-                                        {{ articulo.categoria }} DE LA
-                                        IMPRESORA {{ articulo.marca }}  {{ articulo.modelo }} {{ articulo.color }}
-                                    </v-toolbar-title>
-                                    <v-spacer></v-spacer>
-                                    <v-btn
-                                        id="btnEliminar"
-                                        class="mt-2 elevation-0"
-                                        @click="eliminar(index)"
-                                    >
-                                    <v-icon>delete</v-icon>
-                                    </v-btn>
-                                </v-toolbar>
-                                <v-container>
+                <v-form ref="validacionDetalle">
+                    <v-container>
+                    <span class="font-weight-black">DETALLE DE ARTÍCULOS A SOLICITAR({{  articulosSelececionados }})</span>
+                    <v-card-actions>
+                    <v-spacer></v-spacer>
+                        <v-btn
+                            :disabled="!selected.length"
+                            :loading="loading"
+                            color="red"
+                            text
+                            @click="next"
+                        >
+                                <v-icon>delete</v-icon>
+                            limpiar detalle
+                        </v-btn>
+                    </v-card-actions>
+                        <v-row
+                            align="center"
+                            justify="start"
+                            class="mt-3"
+                        >
+                            <v-col
+                                v-for="(selection, i) in selections"
+                                    :key="selection.id_articulo"
+                                    class="shrink"
+                                    cols="12"
+                                >
+                                <v-alert
+                                    dense
+                                    border="left"
+                                    type="success"
+                                 
+                                    outlined
+                                >
+                                <span class="text-lg-h6"> {{ selection.categoria }} {{ selection.color }}<strong>({{ selection.codigo }}) </strong>DE LA IMPRESORA {{ selection.marca }} <strong> {{ selection.modelo }} </strong></span>
                                 <v-row>
                                     <v-col
                                         cols="12"
                                         sm="2"
                                     >
                                     <v-text-field
-                                        label="Código"
-                                        v-model="articulo.codigo"
-                                        type="text"
-                                        autocomplete="off"
-                                        dense
-                                        color="#15395A"
-                                        class="text-md-body-1 my-text"
-                                        :rules="$rules.required"
-                                        readonly
-                                    >
-                                    </v-text-field>
-
-                                    </v-col>
-                                    <v-col
-                                        cols="12"
-                                        sm="2"
-                                    >
-                                    <v-text-field
-                                        label="Cantidad*"
-                                        v-model="articulo.cantidad_solicitada"
+                                        v-model="selection.cantidad_solicitada"
+                                        label="Cantidad"
                                         type="number"
-                                        autocomplete="off"
-                                        dense
-                                        color="#15395A"
-                                        class="text-md-body-1 my-text"
                                         :min="1"
+                                        autocomplete="off"
+                                        color="#15395A"
+                                        class="text-md-body-1 my-text mx-3"
                                         :rules="numberRule"
                                     >
                                     </v-text-field>
-
                                     </v-col>
-                                
-
+                                    <v-spacer></v-spacer>
+                                   <v-btn
+                                        color="red"
+                                        text
+                                        rounded
+                                        class="elevation-0"
+                                        :disabled="loading"
+                                        @click="seleccionar(i, selection, selected)"
+                                    ><v-icon>close</v-icon>
+                                    </v-btn>
                                 </v-row>
-                                </v-container>
-                            </div>
-                                   
-                        </v-form>
-                        <v-toolbar flat>
-                            <v-spacer></v-spacer>
-                            <v-col
+                                </v-alert>
+                            </v-col>
+                        </v-row>
+                        
+                        <v-col
+                            v-if="!allSelected"
                                 cols="12"
                                 sm="6"
                             >
-                                <v-text-field
-                                    v-model="search"
-                                    label="Buscar"
-                                    single-line
-                                    dense
-                                    hide-details
-                                    clearable
-                                    class="caption"
-                                    color="#1A5276"  
-                                    placeholder="Buscar"
-                                    append-icon="mdi-magnify"
-                                >
-                                </v-text-field>
-                            </v-col>
-                        </v-toolbar>
-                        
-
-                        
-
-                     
-                        <v-data-table
-                            :headers="headers"
-                            :items="desserts"
-                            :items-per-page="5"
-                            :search="search"
-                            class="elevation-0 mt-3"
-                            :loading="cargando"               
-                            no-results-text="No hay datos disponibles"
-                            loading-text="Cargando datos por favor espere..." 
-                            no-data-text="No hay datos disponibles"
-                            :footer-props="{itemsPerPageText:'Artículos por páginas'}"
-                        >  
-                        <template v-slot:[`item.actions`]="{ item }">
-                            <v-btn
-                                small
-                                dark
-                                rounded
-                                color="light-blue darken-1"
-                                @click="elegir(item)"
-                            >elegir
-                            </v-btn>
-                        </template>
-                        </v-data-table>
-                        <v-btn
-                            color="#15395A"
-                            dark
-                            @click="formulario = 1"
-                        >
-                            atras
-                            <v-icon>skip_previous</v-icon>
-                        </v-btn>
-                       
-                    </v-card-text>
-                </v-card>
-                </v-stepper-content>
-            </v-stepper>
-            <v-overlay
+                            <v-text-field
+                                ref="search"
+                                v-model="search"
+                                full-width
+                                hide-details
+                                label="Buscar"
+                                single-line
+                                class="caption my-text"
+                                color="#1A5276"  
+                                append-icon="mdi-magnify"
+                                placeholder="Busqueda"
+                                
+                            ></v-text-field>
+                        </v-col>
+                    </v-container>
+                </v-form>
+                <v-data-table
+                    :headers="headers"
+                    :items="desserts"
+                    :items-per-page="5"
+                    :search="search"
+                    class="elevation-0 mt-3"
+                    no-results-text="No hay datos disponibles"
+                    loading-text="Cargando datos por favor espere..." 
+                    no-data-text="No hay datos disponibles"
+                    :footer-props="{itemsPerPageText:'Artículos por páginas'}"
+                >  
+                <template v-slot:[`item.actions`]="{ item }">
+                    <v-btn
+                        v-if="!selected.includes(item)"
+                        :key="item.id_articulo"
+                        :disabled="loading"
+                        color="green"
+                        dark
+                        small
+                        rounded
+                        class="elevation-0"
+                        @click="elegir(item)"
+                    >elegir
+                    </v-btn>
+                </template>
+                </v-data-table>
+                <v-divider></v-divider>
+            </v-card-text>
+        </v-card>
+        <v-overlay
             :value="overlay"
             :opacity="opacity"
             >
@@ -325,11 +252,10 @@
                 color="#170d73"
             >
             </v-progress-circular>
-            </v-overlay>
+        </v-overlay>
+    </v-container>
 
-        </v-container>
-
-    </v-app>
+   </v-app>
 </template>
 <script src="sweetalert2.all.min.js"></script>
 <script>
@@ -337,60 +263,27 @@ import API from '@/api'
 import { mapState, mapActions } from 'vuex'
 import 'sweetalert2/dist/sweetalert2.min.css';
 export default {
-    
     data() {
         return {
-            formulario:1,
             titulo:-1,
             botones:null,
-            menuFecha:false,
-            verificarMensaje:false,
-            tipo_entrada:'',
-            nowDate: new Date().toISOString().slice(0,10),
-            editeIndex:-1,
-            cargando:false,
             search:'',
-            alerta:false,
-            menu2: false,
-            modal2: false,
+            menuFecha:false,
+            loading: false,
+            loading1: false,
+            nowDate: new Date().toISOString().slice(0,10),
             overlay:false,
             opacity:0,
-            existe:'',
-            despachos:[],
-            headers: 
-            [
-                { text: 'Categoría', sortable: false, value: 'categoria', class: "white--text grey darken-3"},
-                { text: 'Código', value: 'codigo',class: "white--text grey darken-3"},
-                { text: 'Referencia', value: 'referencia', class: "white--text grey darken-3"},
-                { text: 'Marca', value: 'marca', class: "white--text grey darken-3", sortable:false},
-                { text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
-                { text: 'Color', value: 'color', class: "white--text grey darken-3", sortable:false},
-                { text: 'Acción', value: 'actions',class: "white--text grey darken-3"},
-                
-            ],
-            desserts: [],
-            tipo_entradas:[],
-            numberRule: 
-            [
-                value => !!value || 'Campo obligatorio.',
-                v => v > 0 || 'El valor debe ser mayor a cero'
-            ],
-            reglaNum:
-            [
-                value => !!value || 'Campo obligatorio.',
-                value => (value && value.length == 10) || 'El campo debe de tener maximo 10 caracteres',
-                v => v > 0 || 'El valor debe ser mayor a cero'
-            ],
+            tipo_entrada:'',
             editedItem:{
-                fecha_entrada:null,
-                fk_despacho:'',
+                fecha_entrada: null,
+                 fk_despacho:'',
                 fk_tipo_solicitud:1,
                 fk_tipo_entrada:'',
                 tipo_accion:'ENTRADA',
                 usuario:'',
                 entregado_por:'',
                 num_solicitud:'',
-                mes:'',
                 articulos:
                 [
                    {
@@ -406,17 +299,42 @@ export default {
                    }
                 ],
             },
-        }
-    },
+            despachos:[],
+            tipo_entradas:[],
+            desserts:[],
+            selected: [],
+             headers: 
+            [
+                { text: 'Categoría', sortable: false, value: 'categoria', class: "white--text grey darken-3"},
+                { text: 'Código', value: 'codigo',class: "white--text grey darken-3"},
+                { text: 'Modelo de tinta', value: 'referencia', class: "white--text grey darken-3"},
+                { text: 'Marca', value: 'marca', class: "white--text grey darken-3", sortable:false},
+                { text: 'Impresora', value: 'modelo', class: "white--text grey darken-3"},
+                { text: 'Color', value: 'color', class: "white--text grey darken-3", sortable:false},
+                { text: 'Acción', value: 'actions',class: "white--text grey darken-3"},
+                
+            ],
+            numberRule: 
+            [
+                value => !!value || 'Campo obligatorio.',
+                v => v > 0 || 'El valor debe ser mayor a cero'
+            ],
 
-    mounted() {
-        this.informacion()
+        }
     },
 
     computed: {
         ...mapState(['loginDatos']),
         tituloFormulario(){
             return this.titulo === -1 ? 'SOLICITUD DE ENTRADA' : '';
+        },
+
+        cantArrayArticulo () {
+            return this.editedItem.articulos.length
+        },
+
+        articulosSelececionados(){
+            return this.selections.length
         },
 
         fecha_entrada: {
@@ -428,13 +346,43 @@ export default {
             }
         },
 
-        cantArrayArticulo () {
-            return this.editedItem.articulos.length
+        allSelected () {
+            return this.selected.length === this.desserts.length
         },
+      categories () {
+        const search = this.search.toLowerCase()
 
-        existeNumsolicitud(){
-            return this.existe
+        if (!search) return this.desserts
+
+        return this.desserts.filter(item => {
+          const text = item.modelo.toLowerCase()
+
+          return text.indexOf(search) > -1
+        })
+      },
+
+      selections () {
+        const selections = []
+
+        for (const selection of this.selected) {
+          selections.push(selection)
+          
         }
+
+
+        return selections
+      },
+    },
+
+    watch: {
+        selected () {
+        this.search = ''
+       
+        },
+    },
+
+    mounted() {
+        this.informacion()
     },
 
     methods: {
@@ -449,6 +397,23 @@ export default {
             this.mostrarData()
         },
 
+        mostrarData(){
+            this.mostrarDespachos()
+            this.limpiarDataArticulosDetalle()
+            this.mostrarArticulos()
+            this.mostrarTipoEntradas()
+        },
+
+        async mostrarTipoEntradas(){
+            const respuesta = await API.get('tipo_entradas')
+            this.tipo_entradas = respuesta.data.data
+            return
+        },
+
+        limpiarDataArticulosDetalle(){
+            this.editedItem.articulos = []
+        },
+
         formatoFechaEntrada (fechEntrada) {
             if (!fechEntrada) return null
                 const [year, month, day] = fechEntrada.split('-')
@@ -461,38 +426,7 @@ export default {
             return
         },
 
-
-        limpiarDataArticulosDetalle(){
-            this.editedItem.articulos = []
-        },
-
-        async mostrarArticulos(){
-             this.cargando = true
-             const respuesta = await API.get('articulos')
-             this.desserts = respuesta.data.data
-             this.cargando = false
-             if (this.editedItem.articulos.length == 0) {
-                this.alerta = true
-             }
-             return
-        },
-
-        mostrarData(){
-            this.mostrarDespachos()
-            this.limpiarDataArticulosDetalle()
-            this.mostrarArticulos()
-            this.mostrarTipoEntradas()
-           
-            
-        },
-
-        async mostrarTipoEntradas(){
-            const respuesta = await API.get('tipo_entradas')
-            this.tipo_entradas = respuesta.data.data
-            return
-        },
-
-        getSolicitudEntrada(){
+         getSolicitudEntrada(){
             if (this.editedItem.fk_despacho !== null) {
                 let objEntrada = this.tipo_entradas.find(data =>data.fk_despacho === this.editedItem.fk_despacho)
                 this.tipo_entrada = objEntrada.tipo_entrada;
@@ -502,70 +436,51 @@ export default {
             }
         },
 
-        updateItem () {
-            this.editedItem.articulos.forEach((data, i) => {
-            data.item = i + 1
-        })
+        async mostrarArticulos(){
+            const respuesta = await API.get('articulos')
+            this.desserts = respuesta.data.data
+            return
         },
 
-        eliminar(index){
-            this.editedItem.articulos.splice(index, 1)
-            this.updateItem()
-            if (this.editedItem.articulos.length > 0) {
-                this.alerta = false
-            } else {
-                this.alerta = true
-            }
-        },
+        next () {
+            this.loading = true
+            setTimeout(() => {
+            this.search = ''
+            this.selected = []
+            this.loading = false
+            this.$refs.validacionDetalle.resetValidation()
+            this.$refs.validacionDetalle.reset()
+            this.editedItem.articulos.length = []
+            }, 2000)
+      },
 
-        elegir(item){
-            let {articulos} = this.editedItem
-            let cant = articulos.filter(data=>data.fk_articulo === item.id_articulo)
-            if (cant.length > 0) {
-               Swal.fire({
-                icon:'warning',
-                title: 'Ya existe el código ' + item.codigo + ' en el detalle de artículo',
-                showConfirmButton:false,
-                timer:1500
-               })
-            } else {
-                this.editedItem.articulos.push({
-                    no_item: this.cantArrayArticulo + 1,
-                    fk_articulo:item.id_articulo,
-                    codigo:item.codigo,
-                    categoria:item.categoria,
-                    referencia:item.referencia,
-                    marca:item.marca,
-                    modelo:item.modelo,
-                    color:item.color,
-                    cantidad_solicitada: 1,
-                  
-                })
-                this.alerta = false
-                
-            }
-        },
-
-    
-
+        
         registrar(){
-            let perfil = JSON.parse(localStorage.getItem('usuario'))  
+            for (let index = 0; index <this.selections.length; index++) {
+               var cantidad = parseInt(this.selections[index].cantidad_solicitada)
+            }
+            for (let index1 = 0; index1 < this.editedItem.articulos.length; index1++) {
+               this.editedItem.articulos[index1].cantidad_solicitada = cantidad;
+            }
+        
+            let perfil = JSON.parse(localStorage.getItem('usuario'))
             this.editedItem.usuario = perfil.usuario
             if (this.editedItem.articulos.length == 0) {
                 Swal.fire({
-                icon: 'warning',
-                title: 'No se encuentra ningun artículo en el detalle',
-                showConfirmButton: false,
-                timer: 1500
+                    icon: 'warning',
+                    title: 'No se encuentra ningun artículo a solicitar',
+                    showConfirmButton: false,
+                    timer: 1500
                 }) 
             } else {
+                
                 const registrarData = async()=>{
                     let perfil = JSON.parse(localStorage.getItem('usuario'))
                     this.editedItem.usuario = perfil.usuario
-                    if (this.$refs.validarDetalle.validate() && this.$refs.validacion.validate()){
+                    if (this.$refs.validacionDetalle.validate() && this.$refs.validacion.validate()){
                         const respuesta = await API.post('solicitudes', this.editedItem)
                         if (respuesta.data.ok == true) {
-                         const {id} = respuesta.data.data
+                        const {id} = respuesta.data.data
                             localStorage.setItem('id_solicitud', id)
                             this.mostrarSolicitudPendientes()
                             this.overlay = true
@@ -577,7 +492,7 @@ export default {
                         } else if (respuesta.data.ok == false) {
                             this.mensajeErrorRegistro(respuesta.data.errorRegistro)
                         } else if (respuesta.data.existe) {
-                           this.mensajeRegistroExisteNumSolicitud(respuesta.data.existe)
+                        this.mensajeRegistroExisteNumSolicitud(respuesta.data.existe)
                             
                         }
                     } else {
@@ -586,100 +501,92 @@ export default {
                         title:'Faltan campos obligatorios',
                         showConfirmButton:false,
                         timer:2000
-                    }) 
+                        }) 
                     }
                 }
-                return registrarData();
-        
-            }
-        },
-        
-
-            mensajeInfoNoExisteArticuloDetalle(){
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Faltan campos obligatorios o no hay ningún atrículo en el detalle',
-                    showConfirmButton: false,
-                    timer: 2000
-                })
-            },
-
-            mensajeRegistroExitoso(exitoso){
-                Swal.fire({
-                    icon:'success',
-                    title:'!Genial',
-                    text: exitoso,
-                    showConfirmButton:false,
-                    timer:2000
-                })
-            },
-
-            mensajeRegistroExisteNumSolicitud(existe){
-                Swal.fire({
-                    icon:'warning',
-                    title: existe,
-                    showConfirmButton:false,
-                    timer:3000
-                })
-            },
-
-            mensajeErrorRegistro(errorRegistro){
-                Swal.fire({
-                    icon: 'error',
-                    title:errorRegistro,
-                    showConfirmButton:false,
-                    timer:2000
-                })
-            },
-
-            limmpiarTodosCampos(){
-                this.$refs.validacion.resetValidation()
-                this.$refs.validarDetalle.resetValidation()
-                this.$refs.validacion.reset()
-                this.$refs.validarDetalle.reset()
-                this.formulario = 1
-                this.editedItem.articulos.length = []
-            },
-
-            borrar(){
-               this.limmpiarTodosCampos()
-            },
-
-            btnSiguiente(){
-                if (this.$refs.validacion.validate()) {
-                    this.formulario = 2
-                } 
-            }
+                    return registrarData();
             
+                } 
         },
+
+        mensajeRegistroExitoso(exitoso){
+            Swal.fire({
+                icon:'success',
+                title:'!Genial',
+                text: exitoso,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        mensajeRegistroExisteNumSolicitud(existe){
+            Swal.fire({
+                icon:'warning',
+                title: existe,
+                showConfirmButton:false,
+                timer:3000
+            })
+        },
+
+        mensajeErrorRegistro(errorRegistro){
+            Swal.fire({
+                icon: 'error',
+                title:errorRegistro,
+                showConfirmButton:false,
+                timer:2000
+            })
+        },
+
+        borrar(){
+            this.loading1 = true
+            setTimeout(() => {
+                this.search = ''
+                this.selected = []
+                this.loading1 = false
+                this.$refs.validacion.resetValidation()
+                this.$refs.validacion.reset()
+                this.$refs.validacionDetalle.resetValidation()
+                this.$refs.validacionDetalle.reset()
+                this.editedItem.articulos.length = []
+            }, 2000)
+        },
+
+        seleccionar(i, selection, selected){
+            selection.cantidad_solicitada = ''
+            selected.splice(i, 1)
+            this.editedItem.articulos.splice(i, 1)
+        },
+
+        elegir(item){
+            item.cantidad_solicitada = 1
+            this.selected.push(item)
+            this.editedItem.articulos.push({
+                 no_item: this.cantArrayArticulo + 1,
+                fk_articulo:item.id_articulo,
+                codigo:item.codigo,
+                cantidad_solicitada: 1,
+                
+        })
+        }
+     
+      }
 }
 </script>
 <style>
 #fondo{
-     background: #f2f3f4;
+     background:#D7DBDD;
  }
 
  #titulo{
      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
  }
 
- .my-text input{
+.my-text input{
     text-transform: uppercase;
 }
 
-#datosFormulario{
-  font-family:Verdana, Geneva, Tahoma, sans-serif;
-  font-size:15px;
-}
-
 #toolbar{
-    border-left: 5px solid #170d73;
-}
-
-#btnEliminar:hover{
-    color: white;
-    background-color: red;
-    font-weight: bold;
+    border-left: 5px solid teal;
 }
 
 </style>

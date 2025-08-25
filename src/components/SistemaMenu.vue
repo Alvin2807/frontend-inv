@@ -12,7 +12,7 @@
 
                     <v-list-item-content>
                         <v-list-item-title>{{ loginDatos.name }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ loginDatos.apellido }}</v-list-item-subtitle>
+                      
                     </v-list-item-content>
                     </v-list-item>
                 </template>
@@ -119,7 +119,8 @@ export default {
                 action: 'mdi-ticket',
                 items: 
                     [
-                        { title: 'Artículos', path:'/articulos'}
+                        { title: 'Artículos', path:'/articulos'},
+                        //{ title: 'Nomenclaturas', path:'/nomenclaturas'}
                     ],
                 title: 'Parametros',
                 },

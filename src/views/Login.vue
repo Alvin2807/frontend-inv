@@ -156,6 +156,8 @@ export default {
                     if (respuesta.data.ok == true) {
                         this.mostrarDetallesLogin(respuesta.data.data)
                         localStorage.setItem('usuario', JSON.stringify(respuesta.data.data))
+                        localStorage.setItem('id_despacho', JSON.stringify(respuesta.data.data.fk_despacho))
+                        localStorage.setItem('id_usuario', JSON.stringify(respuesta.data.data.id))
                         this.$router.push({path:'/inicio'})
                     
                     } else if (respuesta.data.ok == false) {

@@ -92,11 +92,38 @@ const routes = [
     },
 
     {
+      path: '/detalle_de_num_trans',
+      name: 'DetalleTrans',
+
+      component: () =>
+          import ('../views/DetalleTrans.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
       path: '/detalle_de_articulo_x_entrada',
       name: 'DetalleArticulo',
 
       component: () =>
           import ('../views/DetalleArticulo.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/editar_salida',
+      name: 'EditarSalida',
+
+      component: () =>
+          import ('../views/EditarSalida.vue'),
+      //meta: { requireAuth: true }
+    },
+
+    {
+      path: '/nomenclaturas',
+      name: 'Nomenclatura',
+
+      component: () =>
+          import ('../views/Nomeclatura.vue'),
       //meta: { requireAuth: true }
     },
 

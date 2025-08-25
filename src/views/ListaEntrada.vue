@@ -140,6 +140,13 @@ export default {
                 localStorage.setItem('id_solicitud', item.id_solicitud)
                 this.$router.push({path:'/detalle_de_constancia_de_entrada'})
             },1500)
+        } else if (item.tipo_entrada == 'NÚMERO DE TRANS') {
+            this.overlay = true
+            setTimeout(()=>{
+                this.overlay = false
+                localStorage.setItem('id_solicitud', item.id_solicitud)
+                this.$router.push({path:'/detalle_de_num_trans'})
+            },1500)
         }
         
     }
